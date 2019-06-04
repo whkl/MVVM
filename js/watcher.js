@@ -46,9 +46,9 @@ Watcher.prototype = {
         }
     },
     get: function() {
-        Dep.target = this;
+        Dep.target = this; // 将当前订阅者指向自己
         var value = this.getter.call(this.vm, this.vm); // 这里会触发属性的getter，从而添加订阅者
-        Dep.target = null;
+        Dep.target = null; // 添加完毕，重置
         return value;
     },
 
