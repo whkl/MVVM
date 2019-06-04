@@ -9,20 +9,20 @@ function Watcher(vm, expOrFn, cb) {
     } else {
         this.getter = this.parseGetter(expOrFn.trim());
     }
-
+// 此处为了触发属性的getter，从而在dep添加自己，结合Observer更易理解
     this.value = this.get();
 }
 
 Watcher.prototype = {
     update: function() {
-        this.run();
+        this.run(); // 属性值变化收到通知
     },
     run: function() {
         var value = this.get();
         var oldVal = this.value;
         if (value !== oldVal) {
             this.value = value;
-            this.cb.call(this.vm, value, oldVal);
+            this.cb.call(this.vm, value, oldVal); // 执行Compile中绑定的回调，更新视图
         }
     },
     addDep: function(dep) {
@@ -47,7 +47,7 @@ Watcher.prototype = {
     },
     get: function() {
         Dep.target = this;
-        var value = this.getter.call(this.vm, this.vm);
+        var value = this.getter.call(this.vm, this.vm); // 这里会触发属性的getter，从而添加订阅者
         Dep.target = null;
         return value;
     },

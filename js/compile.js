@@ -33,18 +33,17 @@ Compile.prototype = {
     compileElement: function(el) {
         var childNodes = el.childNodes,
             me = this;
-
         [].slice.call(childNodes).forEach(function(node) {
             var text = node.textContent;
             var reg = /\{\{(.*)\}\}/;
-
+                // 按元素节点方式编译
             if (me.isElementNode(node)) {
                 me.compile(node);
 
             } else if (me.isTextNode(node) && reg.test(text)) {
                 me.compileText(node, RegExp.$1.trim());
             }
-
+            // 遍历编译子节点
             if (node.childNodes && node.childNodes.length) {
                 me.compileElement(node);
             }
@@ -57,10 +56,12 @@ Compile.prototype = {
 
         [].slice.call(nodeAttrs).forEach(function(attr) {
             var attrName = attr.name;
+            // 规定：指令以 v-xxx 命名
+            // 如 <span v-text="content"></span> 中指令为 v-text
             if (me.isDirective(attrName)) {
                 var exp = attr.value;
                 var dir = attrName.substring(2);
-                // 事件指令
+                // 事件指令 如 v-on:click
                 if (me.isEventDirective(dir)) {
                     compileUtil.eventHandler(node, me.$vm, exp, dir);
                     // 普通指令
@@ -128,8 +129,9 @@ var compileUtil = {
         var updaterFn = updater[dir + 'Updater'];
 
         updaterFn && updaterFn(node, this._getVMVal(vm, exp));
-
+        // 实例化订阅者，此操作会在对应的属性消息订阅器中添加了该订阅者watcher
         new Watcher(vm, exp, function(value, oldValue) {
+             // 一旦属性值有变化，会收到通知执行此更新函数，更新视图
             updaterFn && updaterFn(node, value, oldValue);
         });
     },

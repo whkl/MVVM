@@ -16,12 +16,12 @@ Observer.prototype = {
 
     defineReactive: function(data, key, val) {
         var dep = new Dep();
-        var childObj = observe(val);
-
+        var childObj = observe(val); // 监听子属性
+        // 取出所有属性遍历
         Object.defineProperty(data, key, {
             enumerable: true, // 可枚举
             configurable: false, // 不能再define
-            get: function() {
+            get: function() {// 由于需要在闭包内添加watcher，所以通过Dep定义一个全局target属性，暂存watcher, 添加完移除
                 if (Dep.target) {
                     dep.depend();
                 }
@@ -54,11 +54,11 @@ var uid = 0;
 
 function Dep() {
     this.id = uid++;
-    this.subs = [];
+    this.subs = []; // 订阅者数组
 }
 
 Dep.prototype = {
-    addSub: function(sub) {
+    addSub: function(sub) { // 收集订阅者
         this.subs.push(sub);
     },
 
@@ -73,7 +73,7 @@ Dep.prototype = {
         }
     },
 
-    notify: function() {
+    notify: function() { // 提醒订阅者更新
         this.subs.forEach(function(sub) {
             sub.update();
         });
